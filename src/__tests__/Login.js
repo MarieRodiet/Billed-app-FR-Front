@@ -9,7 +9,7 @@ import { fireEvent, screen } from "@testing-library/dom";
 
 describe("Given that I am a user on login page", () => {
   describe("When I do not fill fields and I click on employee button Login In", () => {
-    test("Then It should renders Login page", () => {
+    test("Then It should render Login page", () => {
       document.body.innerHTML = LoginUI();
 
       const inputEmailUser = screen.getByTestId("employee-email-input");
