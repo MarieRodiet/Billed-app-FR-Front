@@ -4,7 +4,8 @@
 
 import { fireEvent, screen } from "@testing-library/dom"
 import NewBillUI from "../views/NewBillUI.js"
-import NewBill from "../containers/NewBill.js"
+import NewBill from "../containers/NewBill.js";
+import mockStore from "../__mocks__/store"
 
 
 describe("Given I am connected as an employee", () => {

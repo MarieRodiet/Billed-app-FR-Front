@@ -9,22 +9,15 @@ class Api {
     this.baseUrl = baseUrl;
   }
   async get({ url, headers }) {
-    console.log(" GET was called");
     return jsonOrThrowIfError(await fetch(`${this.baseUrl}${url}`, { headers, method: 'GET' }))
   }
   async post({ url, data, headers }) {
-    console.log("POST was called");
-    //url /auth/login
-    //data {"email":"admin@test.tld","password":"admin"}
-    console.log(headers)
     return jsonOrThrowIfError(await fetch(`${this.baseUrl}${url}`, { headers, method: 'POST', body: data }))
   }
   async delete({ url, headers }) {
-    console.log("DELETE was called");
     return jsonOrThrowIfError(await fetch(`${this.baseUrl}${url}`, { headers, method: 'DELETE' }))
   }
   async patch({ url, data, headers }) {
-    console.log("PATCH was called");
     return jsonOrThrowIfError(await fetch(`${this.baseUrl}${url}`, { headers, method: 'PATCH', body: data }))
   }
 }

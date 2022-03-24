@@ -5,6 +5,7 @@ import LoadingPage from "./LoadingPage.js"
 import Actions from './Actions.js'
 
 const row = (bill) => {
+  console.log(bill.date);
   return (`
     <tr>
       <td>${bill.type}</td>
@@ -17,14 +18,21 @@ const row = (bill) => {
       </td>
     </tr>
     `)
-  }
+}
 
 const rows = (data) => {
+  console.log(data);
+  let dates = [];
+  data.forEach(bill => {
+    dates.push(bill.date)
+  })
+  console.log(dates);
+  //['22 Nov. 21', '22 Nov. 21', '22 Nov. 21', '1 Jan. 70', '1 Jan. 70', '8 Mar. 22', '4 Mar. 22', '9 Mar. 22', '9 Mar. 22', '1 Mar. 22']
   return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
 }
 
 export default ({ data: bills, loading, error }) => {
-  
+
   const modal = () => (`
     <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -47,7 +55,7 @@ export default ({ data: bills, loading, error }) => {
   } else if (error) {
     return ErrorPage(error)
   }
-  
+
   return (`
     <div class='layout'>
       ${VerticalLayout(120)}
