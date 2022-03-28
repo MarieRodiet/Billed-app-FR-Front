@@ -1,5 +1,4 @@
 import { ROUTES_PATH } from '../constants/routes.js'
-import { formatDate, formatStatus } from "../app/format.js"
 import Logout from "./Logout.js"
 
 export default class {
@@ -24,7 +23,8 @@ export default class {
     const billUrl = icon.getAttribute("data-bill-url")
     const imgWidth = Math.floor($('#modaleFile').width() * 0.5)
     $('#modaleFile').find(".modal-body").html(`<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`)
-    $('#modaleFile').modal('show')
+    if (typeof $('#modaleFile').modal === 'function') $('#modaleFile').modal('show')
+    // $('#modaleFile').modal('show')
   }
 
   getBills = () => {
@@ -38,8 +38,8 @@ export default class {
               try {
                 return {
                   ...doc,
-                  date: formatDate(doc.date),
-                  status: formatStatus(doc.status)
+                  date: doc.date,
+                  status: doc.status
                 }
               } catch (e) {
                 // if for some reason, corrupted data was introduced, we manage here failing formatDate function
@@ -48,11 +48,12 @@ export default class {
                 return {
                   ...doc,
                   date: doc.date,
-                  status: formatStatus(doc.status)
+                  status: doc.status
                 }
               }
             })
           console.log('length', bills.length)
+          console.log(bills);
           return bills
         })
     }

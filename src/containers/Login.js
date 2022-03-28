@@ -16,7 +16,6 @@ export default class Login {
   }
 
   handleSubmitEmployee = e => {
-    e.preventDefault()
     const user = {
       type: "Employee",
       email: e.target.querySelector(`input[data-testid="employee-email-input"]`).value,
@@ -24,21 +23,18 @@ export default class Login {
       status: "connected"
     }
     this.localStorage.setItem("user", JSON.stringify(user))
-    this.login(user)
-    this.login(user)
-      .catch(
-        (err) => this.createUser(user)
-      )
-      .then(() => {
-        this.onNavigate(ROUTES_PATH['Bills'])
-        this.PREVIOUS_LOCATION = ROUTES_PATH['Bills']
-        PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
-        this.document.body.style.backgroundColor = "#fff"
-      })
+    //user does not yet exist in store
+    if (!this.login(user)) {
+      this.createUser(user)
+    }
+    e.preventDefault();
+    this.onNavigate(ROUTES_PATH['Bills'])
+    this.PREVIOUS_LOCATION = ROUTES_PATH['Bills']
+    PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
+    this.document.body.style.backgroundColor = "#fff"
   }
 
   handleSubmitAdmin = e => {
-    e.preventDefault()
     const user = {
       type: "Admin",
       email: e.target.querySelector(`input[data-testid="admin-email-input"]`).value,
@@ -46,16 +42,15 @@ export default class Login {
       status: "connected"
     }
     this.localStorage.setItem("user", JSON.stringify(user))
-    this.login(user)
-      .catch(
-        (err) => this.createUser(user)
-      )
-      .then(() => {
-        this.onNavigate(ROUTES_PATH['Dashboard'])
-        this.PREVIOUS_LOCATION = ROUTES_PATH['Dashboard']
-        PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
-        document.body.style.backgroundColor = "#fff"
-      })
+    if (!this.login(user)) {
+      this.createUser(user)
+    }
+    e.preventDefault();
+    this.onNavigate(ROUTES_PATH['Dashboard'])
+    this.PREVIOUS_LOCATION = ROUTES_PATH['Dashboard']
+    PREVIOUS_LOCATION = this.PREVIOUS_LOCATION
+    document.body.style.backgroundColor = "#fff"
+
   }
 
   // don't need to cover this function by tests
@@ -65,9 +60,11 @@ export default class Login {
         .login(JSON.stringify({
           email: user.email,
           password: user.password,
-        })).then(({ jwt }) => {
+        }))
+        .then(({ jwt }) => {
           localStorage.setItem('jwt', jwt)
         })
+        .catch((err) => err)
     } else {
       return null
     }
@@ -90,6 +87,7 @@ export default class Login {
           console.log(`User with ${user.email} is created`)
           return this.login(user)
         })
+        .catch((err) => err)
     } else {
       return null
     }

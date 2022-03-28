@@ -1,18 +1,18 @@
 import VerticalLayout from './VerticalLayout.js'
 import ErrorPage from "./ErrorPage.js"
 import LoadingPage from "./LoadingPage.js"
+import { formatDate, formatStatus } from "../app/format.js"
 
 import Actions from './Actions.js'
 
 const row = (bill) => {
-  console.log(bill.date);
   return (`
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
-      <td>${bill.date}</td>
+      <td>${formatDate(bill.date)}</td>
       <td>${bill.amount} €</td>
-      <td>${bill.status}</td>
+      <td>${formatStatus(bill.status)}</td>
       <td>
         ${Actions(bill.fileUrl)}
       </td>
@@ -21,14 +21,13 @@ const row = (bill) => {
 }
 
 const rows = (data) => {
-  console.log(data);
-  let dates = [];
-  data.forEach(bill => {
-    dates.push(bill.date)
+  //sort from earliest to latest
+  return data && data.length ? data.sort(function (a, b) {
+    let dateA = new Date(a.date), dateB = new Date(b.date)
+    return dateB - dateA
   })
-  console.log(dates);
-  //['22 Nov. 21', '22 Nov. 21', '22 Nov. 21', '1 Jan. 70', '1 Jan. 70', '8 Mar. 22', '4 Mar. 22', '9 Mar. 22', '9 Mar. 22', '1 Mar. 22']
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
+    .map(bill => row(bill)).join("") :
+    "";
 }
 
 export default ({ data: bills, loading, error }) => {

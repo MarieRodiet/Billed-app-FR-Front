@@ -2,11 +2,20 @@
  * @jest-environment jsdom
  */
 
-import { fireEvent, screen } from "@testing-library/dom"
+import { fireEvent, screen, waitFor } from "@testing-library/dom"
+import { userEvent } from "@testing-library/user-event"
+import '@testing-library/jest-dom/extend-expect'
+import mockStore from "../__mocks__/store"
+import { localStorageMock } from "../__mocks__/localStorage.js";
+import { bills } from "../fixtures/bills.js"
+import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
+import Bills, { getBills } from "../containers/Bills.js"
+import router from "../app/Router";
+import { formatDate } from "../app/format.js"
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js";
-import mockStore from "../__mocks__/store"
 
+jest.mock("../app/store", () => mockStore)
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -21,15 +30,14 @@ describe("Given I am connected as an employee", () => {
       file: ""
     };
 
-    test("Then it should render the New Bill page with empty or default inputs", () => {
+    test("Then it should render the New Bill page with empty inputs", () => {
       document.body.innerHTML = NewBillUI();
       expect(screen.getByTestId("form-new-bill")).toBeTruthy();
-
       const expenseName = screen.getByTestId("expense-name");
       expect(expenseName.value).toEqual("");
 
       const expenseTypeInput = screen.getByTestId("expense-type");
-      expect(expenseTypeInput.value).toEqual("none");
+      expect(expenseTypeInput.value).toEqual("");
 
       const datePicker = screen.getByTestId("datepicker");
       expect(datePicker.value).toBe("");
@@ -50,7 +58,16 @@ describe("Given I am connected as an employee", () => {
       expect(file.value).toBe("");
     })
 
-    test("it should allow me to enter data in the inputs", () => {
+    test("it should prevent me from submitting the form with wrong inputs", () => {
+
+      //try different extensions than jpg, jpeg ou png
+    })
+
+    test("it should prevent me from submitting the form with empty inputs", () => {
+
+    })
+
+    test("it should allow me to submit the form once inputs are correctly entered", () => {
       const expenseTypeInput = screen.getByTestId("expense-type");
 
       const handleChange = jest.fn();
@@ -58,7 +75,7 @@ describe("Given I am connected as an employee", () => {
         target: { value: "Transports" },
       });
       expect(expenseTypeInput.value).toEqual("Transports")
-
+      const expenseName = screen.getByTestId("expense-name");
       fireEvent.change(expenseName, {
         target: {
           value: ""

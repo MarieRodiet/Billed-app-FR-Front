@@ -2,48 +2,209 @@
  * @jest-environment jsdom
  */
 
-import { screen, waitFor } from "@testing-library/dom"
-import BillsUI from "../views/BillsUI.js"
+import { fireEvent, screen, waitFor } from "@testing-library/dom"
+import { userEvent } from "@testing-library/user-event"
+import '@testing-library/jest-dom/extend-expect'
+import BillsUI, { rows } from "../views/BillsUI.js"
 import { bills } from "../fixtures/bills.js"
-import { ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
+import mockStore from "../__mocks__/store"
+import Bills, { getBills } from "../containers/Bills.js"
+import router from "../app/Router";
+import { formatDate } from "../app/format.js"
 
-import router from "../app/Router.js";
+jest.mock("../app/store", () => mockStore)
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
-    test("Then bill icon in vertical layout should be highlighted", async () => {
+    describe('When it is loading', () => {
+      test('Then, Loading page should be rendered', () => {
+        document.body.innerHTML = BillsUI({ loading: true })
+        expect(screen.getAllByText('Loading...')).toBeTruthy()
+      })
+    })
+    describe('When back-end send an error message', () => {
+      test('Then, Error page should be rendered', () => {
+        document.body.innerHTML = BillsUI({ error: 'some error message' })
+        expect(screen.getAllByText('Erreur')).toBeTruthy()
+      })
+    })
+    describe("The page is loaded and there is no error", () => {
+      test("Then bill icon in vertical layout should be highlighted", async () => {
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+        window.localStorage.setItem('user', JSON.stringify({
+          type: 'Employee'
+        }))
+        const root = document.createElement("div")
+        root.setAttribute("id", "root")
+        document.body.append(root)
+
+        router();
+
+        window.onNavigate(ROUTES_PATH.Bills)
+
+        const iconWindow = await screen.getByTestId('icon-window')
+        expect(iconWindow).toBeTruthy()
+        expect(iconWindow).toHaveAttribute('class', "active-icon")
+        expect(iconWindow).toHaveAttribute("id", "layout-icon1");
+      })
+
+      test("Then I should see the title as well as a button to enter a New Bill", () => {
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+        window.localStorage.setItem('user', JSON.stringify({
+          type: 'Employee'
+        }))
+        const root = document.createElement("div")
+        root.setAttribute("id", "root")
+        document.body.append(root)
+
+        router();
+
+        window.onNavigate(ROUTES_PATH.Bills)
+        document.body.innerHTML = BillsUI({ data: bills, loading: false, error: "" })
+
+        expect(screen.getByTestId("btn-new-bill")).toBeTruthy();
+        expect(screen.getByText("Mes notes de frais")).toBeTruthy();
+      })
+
+    })
+
+    test("Then bills show up on page", () => {
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname })
+      }
 
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Employee'
       }))
-      const root = document.createElement("div")
-      root.setAttribute("id", "root")
-      document.body.append(root)
-      router()
-      window.onNavigate(ROUTES_PATH.Bills)
-      await waitFor(() => screen.getByTestId('icon-window'))
-      const windowIcon = screen.getByTestId('icon-window')
-      //to-do write expect expression
-      expect(windowIcon).toBeTruthy()
 
-
-    })
-    test("Then bills should be ordered from earliest to latest", () => {
       document.body.innerHTML = BillsUI({ data: bills })
-      expect(screen.queryByText("Mes notes de frais")).toBeTruthy();
-      const dates = screen.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i).map(a => a.innerHTML)
+
+
+      const billsBoard = new Bills({
+        document, onNavigate, store: null, localStorage: window.localStorage
+      })
+      const iconEye = screen.getAllByTestId('icon-eye')[0];
+      expect(iconEye).toBeTruthy();
+      const billType = screen.getByText("Transports")
+      expect(billType).toBeTruthy();
+      const billName = screen.getByText("test3")
+      expect(billName).toBeTruthy();
+    })
+
+    test("Then if there is no data, the table should render nothing", () => {
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname })
+      }
+
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+
+      document.body.innerHTML = BillsUI({ data: [] })
+
+      const billsBoard = new Bills({
+        document, onNavigate, store: null, localStorage: window.localStorage
+      })
+
+      expect(screen.queryByTestId("tbody")).not.toBeEmptyDOMElement()
+    })
+
+    test("Then the bills should be ordered from earliest to latest", () => {
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname })
+      }
+
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+
+      document.body.innerHTML = BillsUI({ data: bills })
+
+      const billsBoard = new Bills({
+        document, onNavigate, store: null, localStorage: window.localStorage
+      })
+
+
+      let datesFromBills = bills.map(bill => bill["date"])
       const antiChrono = (a, b) => ((a < b) ? 1 : -1)
-      const datesSorted = [...dates].sort(antiChrono)
-      expect(datesSorted).toBeDefined()
-      expect(dates[0]).toStrictEqual(datesSorted[0])
-      expect(dates[2]).toStrictEqual(datesSorted[2])
-      expect(datesSorted).toBeNaN()
-      expect(dates).toBeNaN()
-      expect(dates).toEqual(datesSorted)
+      const datesSorted = [...datesFromBills].sort(antiChrono)
+      let formatedDates = []
+      //datesSorted need to go through formatDate() before being ready to render to DOM
+      datesSorted.forEach(date =>
+        formatedDates.push(formatDate(date)))
+
+      const datesFromDOM = Array.from(
+        document.body.querySelectorAll('#data-table tbody>tr>td:nth-child(3)')
+      ).map((a) => a.innerHTML);
+
+      expect(datesFromDOM).toEqual(formatedDates)
+    })
 
 
+  })
+})
+
+describe("Given I am connected as an employee", () => {
+  describe("When I am on Bills Page", () => {
+    describe("The page is loaded and there is no error", () => {
+      test("Then when I click on the eye icon, I can see the picture of the bill", () => {
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname })
+        }
+
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
+        window.localStorage.setItem('user', JSON.stringify({
+          type: 'Employee'
+        }))
+
+        document.body.innerHTML = BillsUI({ data: bills })
+
+        const billsBoard = new Bills({
+          document, onNavigate, store: null, localStorage: window.localStorage
+        })
+        const iconEye = screen.getAllByTestId('icon-eye')[0];
+        const handleClickIconEye = jest.fn(billsBoard.handleClickIconEye(iconEye))
+        iconEye.addEventListener('click', handleClickIconEye)
+        fireEvent.click(iconEye)
+        expect(handleClickIconEye).toHaveBeenCalled()
+        expect(screen.getAllByAltText("Bill")).toBeTruthy();
+        expect(screen.getByText("Justificatif")).toBeTruthy();
+      })
+
+      test("Then when I click on the btn-new-bill, I can enter a new Bill", () => {
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname })
+        }
+
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
+        window.localStorage.setItem('user', JSON.stringify({
+          type: 'Employee'
+        }))
+
+        document.body.innerHTML = BillsUI({ data: bills })
+
+        const billsBoard = new Bills({
+          document, onNavigate, store: null, localStorage: window.localStorage
+        })
+
+        let newBillBtn = screen.getByTestId("btn-new-bill");
+        const handleClickNewBill = jest.fn(billsBoard.handleClickNewBill());
+        expect(newBillBtn).toBeTruthy()
+        newBillBtn.addEventListener("click", handleClickNewBill);
+        fireEvent.click(newBillBtn);
+        expect(handleClickNewBill).toHaveBeenCalled();
+        expect(screen.getByText("Envoyer une note de frais")).toBeTruthy();
+      })
     })
   })
 })
