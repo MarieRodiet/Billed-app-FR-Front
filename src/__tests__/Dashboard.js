@@ -245,6 +245,7 @@ describe("Given I am a user connected as Admin", () => {
   describe("When I navigate to Dashboard", () => {
     test("fetches bills from mock API GET", async () => {
       localStorage.setItem("user", JSON.stringify({ type: "Admin", email: "a@a" }));
+      
       const root = document.createElement("div")
       root.setAttribute("id", "root")
       document.body.append(root)
@@ -276,7 +277,6 @@ describe("Given I am a user connected as Admin", () => {
         router()
       })
       test("fetches bills from an API and fails with 404 message error", async () => {
-
         mockStore.bills.mockImplementationOnce(() => {
           return {
             list: () => {
@@ -291,7 +291,6 @@ describe("Given I am a user connected as Admin", () => {
       })
 
       test("fetches messages from an API and fails with 500 message error", async () => {
-
         mockStore.bills.mockImplementationOnce(() => {
           return {
             list: () => {
