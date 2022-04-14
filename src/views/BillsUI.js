@@ -1,12 +1,12 @@
-import VerticalLayout from './VerticalLayout.js'
-import ErrorPage from "./ErrorPage.js"
-import LoadingPage from "./LoadingPage.js"
-import { formatDate, formatStatus } from "../app/format.js"
+import VerticalLayout from "./VerticalLayout.js";
+import ErrorPage from "./ErrorPage.js";
+import LoadingPage from "./LoadingPage.js";
+import { formatDate, formatStatus } from "../app/format.js";
 
-import Actions from './Actions.js'
+import Actions from "./Actions.js";
 
 const row = (bill) => {
-  return (`
+    return `
     <tr>
       <td>${bill.type}</td>
       <td>${bill.name}</td>
@@ -17,22 +17,25 @@ const row = (bill) => {
         ${Actions(bill.fileUrl)}
       </td>
     </tr>
-    `)
-}
+    `;
+};
 
 const rows = (data) => {
-  //sort from earliest to latest
-  return data && data.length ? data.sort(function (a, b) {
-    let dateA = new Date(a.date), dateB = new Date(b.date)
-    return dateB - dateA
-  })
-    .map(bill => row(bill)).join("") :
-    "";
-}
+    //sort from earliest to latest
+    return data && data.length
+        ? data
+              .sort(function (a, b) {
+                  let dateA = new Date(a.date),
+                      dateB = new Date(b.date);
+                  return dateB - dateA;
+              })
+              .map((bill) => row(bill))
+              .join("")
+        : "";
+};
 
 export default ({ data: bills, loading, error }) => {
-
-  const modal = () => (`
+    const modal = () => `
     <div class="modal fade" id="modaleFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
@@ -47,15 +50,15 @@ export default ({ data: bills, loading, error }) => {
         </div>
       </div>
     </div>
-  `)
+  `;
 
-  if (loading) {
-    return LoadingPage()
-  } else if (error) {
-    return ErrorPage(error)
-  }
+    if (loading) {
+        return LoadingPage();
+    } else if (error) {
+        return ErrorPage(error);
+    }
 
-  return (`
+    return `
     <div class='layout'>
       ${VerticalLayout(120)}
       <div class='content'>
@@ -82,6 +85,5 @@ export default ({ data: bills, loading, error }) => {
         </div>
       </div>
       ${modal()}
-    </div>`
-  )
-}
+    </div>`;
+};

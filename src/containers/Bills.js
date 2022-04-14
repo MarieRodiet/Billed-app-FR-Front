@@ -1,81 +1,93 @@
-import { ROUTES_PATH } from '../constants/routes.js'
-import Logout from "./Logout.js"
+import { ROUTES_PATH } from "../constants/routes.js";
+import Logout from "./Logout.js";
 
 export const filteredBills = (data, status) => {
-  return (data && data.length) ?
-    data.filter(bill => {
-      let selectCondition
-
-      // in jest environment
-      if (typeof jest !== 'undefined') {
-        selectCondition = (bill.status === status)
-      }
-      /* istanbul ignore next */
-      else {
-        // in prod environment
-        const userEmail = JSON.parse(localStorage.getItem("user")).email
-        selectCondition =
-          (bill.status === status) &&
-          ![...USERS_TEST, userEmail].includes(bill.email)
-      }
-
-      return selectCondition
-    }) : []
-}
-export default class {
-  constructor({ document, onNavigate, store, localStorage }) {
-    this.document = document
-    this.onNavigate = onNavigate
-    this.store = store
-    const buttonNewBill = document.querySelector(`button[data-testid="btn-new-bill"]`)
-    if (buttonNewBill) buttonNewBill.addEventListener('click', this.handleClickNewBill)
-    const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`)
-    if (iconEye) iconEye.forEach(icon => {
-      icon.addEventListener('click', () => this.handleClickIconEye(icon))
-    })
-    new Logout({ document, localStorage, onNavigate })
-  }
-
-  handleClickNewBill = () => {
-    this.onNavigate(ROUTES_PATH['NewBill'])
-  }
-
-  handleClickIconEye = (icon) => {
-    const billUrl = icon.getAttribute("data-bill-url")
-    const imgWidth = Math.floor($('#modaleFile').width() * 0.5)
-    $('#modaleFile').find(".modal-body").html(`<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`)
-    if (typeof $('#modaleFile').modal === 'function') $('#modaleFile').modal('show')
-    // $('#modaleFile').modal('show')
-  }
-
-  getBills = () => {
-    if (this.store) {
-      return this.store
-        .bills()
-        .list()
-        .then(snapshot => {
-          const bills = snapshot
-            .map(doc => {
-              try {
-                return {
-                  ...doc,
-                  date: doc.date,
-                  status: doc.status
-                }
-              } catch (e) {
-                // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-                // log the error and return unformatted date in that case
-                console.log(e, 'for', doc)
-                return {
-                  ...doc,
-                  date: doc.date,
-                  status: doc.status
-                }
+    return data && data.length
+        ? data.filter((bill) => {
+              let selectCondition;
+              // in jest environment
+              if (typeof jest !== "undefined") {
+                  selectCondition = bill.status === status;
+              } else {
+                  /* istanbul ignore next */
+                  // in prod environment
+                  const userEmail = JSON.parse(
+                      localStorage.getItem("user")
+                  ).email;
+                  selectCondition =
+                      bill.status === status &&
+                      ![...USERS_TEST, userEmail].includes(bill.email);
               }
-            })
-          console.log('length', bills.length)
-          return bills
-        })
+              return selectCondition;
+          })
+        : [];
+};
+export default class {
+    constructor({ document, onNavigate, store, localStorage }) {
+        this.document = document;
+        this.onNavigate = onNavigate;
+        this.store = store;
+        const buttonNewBill = document.querySelector(
+            `button[data-testid="btn-new-bill"]`
+        );
+        if (buttonNewBill)
+            buttonNewBill.addEventListener("click", this.handleClickNewBill);
+        const iconEye = document.querySelectorAll(
+            `div[data-testid="icon-eye"]`
+        );
+        if (iconEye)
+            iconEye.forEach((icon) => {
+                icon.addEventListener("click", () =>
+                    this.handleClickIconEye(icon)
+                );
+            });
+        new Logout({ document, localStorage, onNavigate });
     }
-  }
+
+    handleClickNewBill = () => {
+        this.onNavigate(ROUTES_PATH["NewBill"]);
+    };
+
+    handleClickIconEye = (icon) => {
+        const billUrl = icon.getAttribute("data-bill-url");
+        const imgWidth = Math.floor($("#modaleFile").width() * 0.5);
+        $("#modaleFile")
+            .find(".modal-body")
+            .html(
+                `<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} alt="Bill" /></div>`
+            );
+        if (typeof $("#modaleFile").modal === "function")
+            $("#modaleFile").modal("show");
+        // $('#modaleFile').modal('show')
+    };
+
+    getBills = () => {
+        if (this.store) {
+            return this.store
+                .bills()
+                .list()
+                .then((snapshot) => {
+                    const bills = snapshot.map((doc) => {
+                        try {
+                            return {
+                                ...doc,
+                                date: doc.date,
+                                status: doc.status,
+                            };
+                        } catch (e) {
+                            // if for some reason, corrupted data was introduced, we manage here failing formatDate function
+                            // log the error and return unformatted date in that case
+                            console.log(e, "for", doc);
+                            return {
+                                ...doc,
+                                date: doc.date,
+                                status: doc.status,
+                            };
+                        }
+                    });
+                    console.log("length", bills.length);
+                    return bills;
+                });
+        }
+    };
 }

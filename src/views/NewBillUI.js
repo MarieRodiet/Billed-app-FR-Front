@@ -1,8 +1,9 @@
-import VerticalLayout from './VerticalLayout.js'
+import VerticalLayout from "./VerticalLayout.js";
+import ErrorPage from "./ErrorPage.js";
+import LoadingPage from "./LoadingPage.js";
 
 export default () => {
-
-  return (`
+    return `
     <div class='layout'>
       ${VerticalLayout(120)}
       <div class='content'>
@@ -52,11 +53,11 @@ export default () => {
                 <div class="col-md-6">
                   <div class="col-half">
                     <label for="commentary" class="bold-label">Commentaire</label>
-                    <textarea class="form-control blue-border" data-testid="commentary" rows="3"></textarea>
+                    <textarea required class="form-control blue-border" data-testid="commentary" rows="3"></textarea>
                   </div>
                   <div class="col-half">
                     <label for="file" class="bold-label">Justificatif</label>
-                    <input type="file" class="form-control blue-border" id="file" data-testid="file" />
+                    <input required type="file" class="form-control blue-border" id="file" data-testid="file" />
                     <span id='errorMessage' data-testid="errorMessage"></span>
                   </div>
                 </div>
@@ -72,5 +73,5 @@ export default () => {
         </div>
       </div>
     </div>
-  `)
-}
+  `;
+};
