@@ -3,7 +3,7 @@
  */
 
 import { fireEvent, screen, waitFor } from "@testing-library/dom";
-import { userEvent } from "@testing-library/user-event";
+
 import "@testing-library/jest-dom/extend-expect";
 import BillsUI, { rows } from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";

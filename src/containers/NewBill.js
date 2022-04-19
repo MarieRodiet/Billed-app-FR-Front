@@ -13,12 +13,15 @@ export default class NewBill {
         const file = this.document.querySelector(`input[data-testid="file"]`);
         file.addEventListener("change", this.handleChangeFile);
         this.fileUrl = null;
+        this.email = null;
         this.fileName = null;
         this.billId = null;
+        this.formData = new FormData();
         new Logout({ document, localStorage, onNavigate });
     }
 
     handleChangeFile = (e) => {
+        this.formData = null;
         let messageBox = document.querySelector(`#errorMessage`);
         messageBox.textContent = "";
         const file = this.document.querySelector(`input[data-testid="file"]`)
@@ -27,15 +30,14 @@ export default class NewBill {
         const fileName = filePath[filePath.length - 1];
         let fileExtension = fileName.split(".").pop();
         if (["jpg", "jpeg", "png"].includes(fileExtension)) {
-            const formData = new FormData();
-            const email = JSON.parse(localStorage.getItem("user")).email;
-            formData.append("file", file);
-            formData.append("email", email);
+            this.email = JSON.parse(localStorage.getItem("user")).email;
+            this.formData.append("file", file);
+            this.formData.append("email", this.email);
 
             this.store
                 .bills()
                 .create({
-                    data: formData,
+                    data: this.formData,
                     headers: {
                         noContentType: true,
                     },

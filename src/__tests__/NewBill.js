@@ -17,33 +17,6 @@ jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
     describe("When I am on NewBill Page", () => {
-        test("Then it should render the New Bill page with empty inputs", () => {
-            document.body.innerHTML = NewBillUI();
-            expect(screen.getByTestId("form-new-bill")).toBeTruthy();
-            const expenseName = screen.getByTestId("expense-name");
-            expect(expenseName.value).toEqual("");
-
-            const expenseTypeInput = screen.getByTestId("expense-type");
-            expect(expenseTypeInput.value).toEqual("");
-
-            const datePicker = screen.getByTestId("datepicker");
-            expect(datePicker.value).toBe("");
-
-            const amount = screen.getByTestId("amount");
-            expect(amount.value).toBe("");
-
-            const tva = screen.getByTestId("vat");
-            expect(tva.value).toBe("");
-
-            const pct = screen.getByTestId("pct");
-            expect(pct.value).toBe("");
-
-            const comment = screen.getByTestId("commentary");
-            expect(comment.value).toBe("");
-
-            const file = screen.getByTestId("file");
-            expect(file.value).toBe("");
-        });
         test("Then the icon-mail in vertical layout should now be highlighted and icon-window should not", () => {
             Object.defineProperty(window, "localStorage", {
                 value: localStorageMock,
@@ -69,6 +42,29 @@ describe("Given I am connected as an employee", () => {
             const iconWindow = screen.getByTestId("icon-window");
             expect(iconWindow).toBeTruthy();
             expect(iconWindow).toHaveAttribute("id", "layout-icon1");
+        });
+
+        test("Then it should render the New Bill page with empty inputs", () => {
+            document.body.innerHTML = NewBillUI();
+
+            const expenseName = screen.getByTestId("expense-name");
+            const expenseTypeInput = screen.getByTestId("expense-type");
+            const datePicker = screen.getByTestId("datepicker");
+            const amount = screen.getByTestId("amount");
+            const tva = screen.getByTestId("vat");
+            const pct = screen.getByTestId("pct");
+            const comment = screen.getByTestId("commentary");
+            const file = screen.getByTestId("file");
+
+            expect(screen.getByTestId("form-new-bill")).toBeTruthy();
+            expect(expenseName.value).toEqual("");
+            expect(expenseTypeInput.value).toEqual("");
+            expect(datePicker.value).toBe("");
+            expect(amount.value).toBe("");
+            expect(tva.value).toBe("");
+            expect(pct.value).toBe("");
+            expect(comment.value).toBe("");
+            expect(file.value).toBe("");
         });
 
         test("it should prevent me from submitting the form with empty inputs", () => {
@@ -175,11 +171,7 @@ describe("Given I am connected as an employee", () => {
             window.onNavigate(ROUTES_PATH.NewBill);
             document.body.innerHTML = NewBillUI();
 
-            const newBill = new NewBill({
-                document,
-                onNavigate,
-                store: null,
-                localStorage: window.localStorage,
+            const newBill = new NewBill({document, onNavigate, store: null, localStorage: window.localStorage,
             });
 
             const fileInput = screen.getByTestId("file");
@@ -236,6 +228,9 @@ describe("Given I am connected as an employee", () => {
                 )
             );
             expect(newBill.fileName).toBeNull();
+            expect(newBill.fileUrl).toBeNull();
+            expect(newBill.formData).toBeNull();
+            expect(newBill.email).toBeNull();
         });
 
         test("Then it should redirect me to Bills page if form has been submitted with correct inputs", () => {
@@ -310,20 +305,6 @@ describe("Given I am connected as an employee", () => {
                 target: { value: newBillData["commentary"] },
             });
 
-            // const fileInput = screen.getByTestId("file");
-            // let file = new File(["image.png"], "image.png", {
-            //   type: "image/png"
-            // })
-
-            // const handleFile = jest.fn(() => newBill.handleChangeFile);
-            // fileInput.addEventListener("change", handleFile);
-            // fireEvent.change(fileInput, { target: { files: [file] } }
-            // )
-            // expect(handleFile).toHaveBeenCalled()
-            // expect(newBill.billId).toBe(newBillData.id);
-            // expect(newBill.fileUrl).toBe(newBillData.fileUrl);
-            // expect(newBill.fileName).toBe(newBillData.fileName)
-
             newBill.fileName = newBillData["name"];
             newBill.fileUrl = newBillData["fileUrl"];
 
@@ -355,7 +336,7 @@ describe("Given I am connected as an employee", () => {
             router();
         });
         //TEST POST BILL
-        test("Then I should be able to create a new bill and get its id", async () => {
+        test("Then I should be able to create a new bill and get its fileUrl and key", async () => {
             let spy = jest.spyOn(mockStore, "bills");
             const newBillData = {
                 id: "BeKy5Mo4jkmdfPGYpTxZ",
@@ -373,21 +354,34 @@ describe("Given I am connected as an employee", () => {
                 status: "refused",
                 commentAdmin: "en fait non",
             };
+
             let method = new mockStore.bills();
-            let object = await method.create(newBillData);
+            let object = await method
+                .create(newBillData);
+
+
 
             expect(spy).toHaveBeenCalledTimes(1);
-            expect(object).toBe(newBillData["id"]);
+            expect(object.key).toBe(newBillData["id"]);
+            expect(object.fileUrl).toBe(newBillData["fileUrl"]);
+
         });
         test("fails to create message with 404 message error", async () => {
             let spy = jest.spyOn(mockStore, "bills");
             let method = new mockStore.bills();
             //TypeError: Cannot read property 'mockImplementationOnce' of undefined
-            // mockStore.create.mockImplementationOnce(() => {
-            //   return Promise.reject(new Error("Erreur 404"))
+            // mockStore.bills.create.mockImplementationOnce(() => {
+            //     return Promise.reject(new Error("Erreur 404"))
             // })
-            // window.onNavigate(ROUTES_PATH.NewBill)
-            // await new Promise(process.nextTick);
+            // mockStore.bills.mockImplementationOnce(() => {
+            //     return {
+            //         create: () => {
+            //             return Promise.reject(new Error("Erreur 500"));
+            //         },
+            //     };
+            // });
+            window.onNavigate(ROUTES_PATH.NewBill)
+            await new Promise(process.nextTick);
             document.body.innerHTML = BillsUI({ error: "Erreur 404" });
             const message = screen.getByText(/Erreur 404/);
             expect(message).toBeTruthy();

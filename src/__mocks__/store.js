@@ -69,7 +69,9 @@ const mockedBills = {
         ]);
     },
     create(bill) {
-        return Promise.resolve(bill.id);
+        return Promise.resolve({
+            key: bill.id, 
+            fileUrl : bill.fileUrl});
     },
     update(bill) {
         return Promise.resolve({
