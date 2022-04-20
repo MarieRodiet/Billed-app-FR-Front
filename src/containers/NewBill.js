@@ -1,5 +1,6 @@
 import { ROUTES_PATH } from "../constants/routes.js";
 import Logout from "./Logout.js";
+import ErrorPage from '../views/ErrorPage.js';
 
 export default class NewBill {
     constructor({ document, onNavigate, store, localStorage }) {
@@ -48,7 +49,8 @@ export default class NewBill {
                     this.fileName = fileName;
                 })
                 .catch((error) => {
-                    throw error;
+                    const rootDiv = document.getElementById('root')
+                    rootDiv.innerHTML = ErrorPage(error)
                 });
         } else {
             messageBox.textContent =
@@ -100,7 +102,8 @@ export default class NewBill {
                     this.onNavigate(ROUTES_PATH["Bills"]);
                 })
                 .catch((error) => {
-                    throw error;
+                    const rootDiv = document.getElementById('root')
+                    rootDiv.innerHTML = ErrorPage(error)
                 });
         }
     };

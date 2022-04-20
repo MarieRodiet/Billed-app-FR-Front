@@ -1,6 +1,4 @@
 import VerticalLayout from "./VerticalLayout.js";
-import ErrorPage from "./ErrorPage.js";
-import LoadingPage from "./LoadingPage.js";
 
 export default () => {
     return `
